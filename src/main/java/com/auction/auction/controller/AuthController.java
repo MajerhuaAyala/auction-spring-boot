@@ -1,6 +1,7 @@
 package com.auction.auction.controller;
 
 import com.auction.auction.Auth.JwtHelper;
+import com.auction.auction.dto.req.JwtRequest;
 import com.auction.auction.dto.res.JwtResponse;
 import com.auction.auction.dto.res.UserResponseDto;
 import com.auction.auction.exp.UserAlreadyExistsException;
@@ -11,6 +12,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -49,6 +54,39 @@ public class AuthController {
         } catch (UserAlreadyExistsException ex) {
             return ResponseEntity.status(HttpStatus.CONFLICT)
                     .body(new JwtResponse("User already exists: " + ex.getMessage()));
+        }
+    }
+
+    @PostMapping("/login")
+    public ResponseEntity<JwtResponse> login(@RequestBody JwtRequest jwtRequest) {
+        this.doAuthenticate(jwtRequest.getEmail(), jwtRequest.getPassword());
+        UserDetails userDetails = userDetailsService.loadUserByUsername(jwtRequest.getEmail());
+        System.out.println("UserDetails: " + userDetails);
+        String token = this.helper.generateToken(userDetails);
+        System.out.println("Token: " + token);
+        JwtResponse jwtResponse = JwtResponse.builder().token(token).build();
+        System.out.println("jwtResponse: " + jwtRequest);
+        return new ResponseEntity<>(jwtResponse, HttpStatus.OK);
+    }
+
+    private void doAuthenticate(String email, String password) {
+        System.out.println("Login Info");
+        System.out.println(email);
+        System.out.println(password);
+        System.out.println("------");
+
+        UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(email, password);
+
+        System.out.println(authenticationToken + "  do authenticarte");
+        try {
+            System.out.println("Started");
+            manager.authenticate(authenticationToken);
+            System.out.println("Eneded");
+            SecurityContextHolder.getContext().setAuthentication(authenticationToken);
+            System.out.println("Authentication successful for user: " + email);
+        } catch (BadCredentialsException e) {
+            System.out.println("Authentication not-successful for user: " + email);
+            throw new BadCredentialsException(" Invalid Username or Password");
         }
     }
 }

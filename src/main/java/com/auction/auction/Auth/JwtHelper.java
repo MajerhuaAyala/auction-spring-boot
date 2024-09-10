@@ -15,7 +15,7 @@ import java.util.function.Function;
 public class JwtHelper {
     public static final long JWT_TOKEN_VALIDITY = 5 * 60 * 60;
 
-    private final String secret = "@@#ASDFADFASAaaa";
+    private final String secret = "afafasfafafasfasfasfafacasdasfasxASFACASDFACASDFASFASFDAFASFASDAADSCSDFADCVSGCFVADXCcadwavfsfarvf";
 
     public Date getExpirationDateFromToken(String token) {
         return getClaimFromToken(token, Claims::getExpiration);
@@ -49,6 +49,7 @@ public class JwtHelper {
     }
 
     private String doGenerateToke(Map<String, Object> claims, String subject) {
+        System.out.println("doGenerateToken: " + subject);
         return Jwts.builder()
                 .setClaims(claims)
                 .setSubject(subject)
