@@ -22,7 +22,7 @@ import java.io.IOException;
 @Component
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
-    private Logger logger = LoggerFactory.getLogger(JwtAuthenticationFilter.class);
+    private final Logger logger = LoggerFactory.getLogger(JwtAuthenticationFilter.class);
 
     @Autowired
     private JwtHelper jwtHelper;
@@ -43,18 +43,10 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
             try {
                 username = this.jwtHelper.getUsernameFromToken(token);
-            } catch (IllegalArgumentException e) {
+            } catch (Exception e) {
                 logger.info("Illegal Argument while fetching the username !!");
                 e.printStackTrace();
-            } catch (ExpiredJwtException e) {
-                logger.info("Given jwt token is expired !!");
-                e.printStackTrace();
-            } catch (MalformedJwtException e) {
-                logger.info("Some changed has done in token !! Invalid Token");
-                e.printStackTrace();
-            } catch (Exception e) {
-                e.printStackTrace();
-
+                response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Invalid JWT token");
             }
         } else {
             logger.info("Invalid Header Value !! ");

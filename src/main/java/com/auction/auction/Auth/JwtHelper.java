@@ -31,11 +31,7 @@ public class JwtHelper {
     }
 
     private Claims getAllClaimsFromToken(String token) {
-        return (Claims) Jwts
-                .parserBuilder()
-                .requireAudience(secret)
-                .build()
-                .parse(token);
+        return Jwts.parser().setSigningKey(secret).parseClaimsJws(token).getBody();
     }
 
     private Boolean isTokenExpired(String token) {
